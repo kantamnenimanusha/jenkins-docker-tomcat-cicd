@@ -1,0 +1,20 @@
+# Secrets and credentials
+.env
+*.pem
+*.key
+id_rsa
+id_ed25519
+credentials.xml
+tomcat-users.xml
+
+# Build output
+target/
+*.war
+*.jar
+
+# IDE and OS files
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users>
+    <role rolename="manager-gui"/>
+    <role rolename="manager-script"/>
+
+    <!-- Replace placeholders with credentials stored securely.
+         Never commit real usernames or passwords. -->
+    <user username="YOUR_USERNAME"
+          password="REPLACE_WITH_SECURE_PASSWORD"
+          roles="manager-gui,manager-script"/>
+</tomcat-users>
