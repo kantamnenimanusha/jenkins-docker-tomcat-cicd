@@ -1,21 +1,21 @@
-﻿# Jenkins CI/CD Pipeline for Dockerized Tomcat Deployment
+# Jenkins CI/CD Pipeline for Dockerized Tomcat Deployment
 
 A hands-on DevOps project that automates the build, transfer, and deployment of a Java web application using Jenkins, Maven, Docker, Apache Tomcat, and AWS EC2.
 
-The pipeline builds a WAR artifact, transfers it to a remote Docker host over SSH, creates a Docker image, deploys the application in Tomcat, and verifies the deployment through an HTTP health check.
+The pipeline checks out application source code, builds a WAR artifact, transfers the deployment files to a remote Docker host over SSH, builds a Docker image, deploys the application in Tomcat, and verifies its availability through an HTTP health check.
 
 ## 1. Project Overview
 
-This project demonstrates an end-to-end CI/CD workflow with two AWS EC2 instances:
+This project demonstrates an end-to-end CI/CD workflow using two AWS EC2 instances:
 
 - **Jenkins Server:** Automates source checkout, application build, artifact verification, and deployment.
 - **Docker Host:** Receives deployment files, builds the Docker image, and runs the Tomcat container.
 
-The pipeline is designed to reduce manual deployment steps and provide a repeatable deployment process.
+The pipeline reduces manual deployment steps and provides a repeatable deployment process.
 
 **Application source:** [iamsaketranjan/hello-world](https://github.com/iamsaketranjan/hello-world)
 
-The application source is a separate sample project. This repository contains the CI/CD pipeline and deployment configuration.
+The application is a separate sample project. This repository contains the CI/CD pipeline, Docker configuration, and deployment documentation.
 
 ## 2. Architecture
 
@@ -28,7 +28,7 @@ flowchart TD
     E --> F["Generate and Verify WAR"]
     F --> G["SSH File Transfer"]
     G --> H["Docker Host - AWS EC2"]
-    H --> I["Copy Deployment Files"]
+    H --> I["Prepare Deployment Files"]
     I --> J["Build Docker Image"]
     J --> K["Start Tomcat Container"]
     K --> L["Deploy WAR Application"]
@@ -41,10 +41,10 @@ flowchart TD
 1. Jenkins retrieves the application source code from GitHub.
 2. Maven builds the application and generates a WAR file.
 3. Jenkins verifies that the WAR artifact exists.
-4. Publish Over SSH transfers the WAR and Docker configuration to the Docker host.
-5. The Docker host builds the application image.
+4. Jenkins Publish Over SSH transfers the WAR and Docker configuration to the Docker host.
+5. The Docker host prepares the deployment files and builds the Docker image.
 6. The previous application container is replaced with a new container.
-7. A local HTTP health check verifies that the application responds successfully.
+7. An HTTP health check verifies that the application responds successfully.
 
 ## 3. Technology Stack
 
@@ -55,7 +55,7 @@ flowchart TD
 | Java | Java application build and runtime |
 | Apache Maven | Application compilation and WAR packaging |
 | AWS EC2 | Hosts Jenkins and the Docker deployment server |
-| SSH | Secure remote communication and file transfer |
+| SSH | Remote communication and file transfer |
 | Publish Over SSH | Jenkins-to-Docker-host file transfer and remote execution |
 | Docker | Image creation and container deployment |
 | Apache Tomcat | Java web application server |
@@ -63,7 +63,9 @@ flowchart TD
 
 ## 4. Jenkins Pipeline
 
-The pipeline is defined in the `Jenkinsfile`.
+The pipeline is defined in the `Jenkinsfile` using Jenkins Declarative Pipeline syntax.
+
+### Pipeline stages
 
 | Stage | Description |
 |---|---|
@@ -79,9 +81,15 @@ The pipeline is defined in the `Jenkinsfile`.
 mvn clean package
 ```
 
+The pipeline uses the Maven installation configured at:
+
+```text
+/opt/maven
+```
+
 ### Deployment configuration
 
-The deployment stage uses Jenkins Publish Over SSH to communicate with the Docker host.
+Jenkins Publish Over SSH is used to communicate with the Docker host.
 
 The configured SSH server name in Jenkins is:
 
@@ -95,7 +103,7 @@ The pipeline transfers:
 - The Dockerfile.
 - The Tomcat Manager context configuration.
 
-The actual Tomcat credentials file is provisioned separately on the Docker host.
+The actual Tomcat credentials file is provisioned separately on the Docker host and is not stored in this repository.
 
 ## 5. Repository Structure
 
@@ -157,7 +165,7 @@ Required configuration:
 - The application port must be allowed through the Docker host security group for browser access.
 - SSH access should be restricted to trusted source addresses.
 
-Do not expose Jenkins or SSH ports publicly without appropriate access controls.
+Avoid exposing Jenkins or SSH ports publicly without appropriate access controls.
 
 ## 7. Docker Deployment
 
@@ -201,7 +209,7 @@ The following results were verified:
 - The application endpoint returned HTTP `200 OK`.
 - The registration page was accessible in a browser.
 
-### Health check
+### HTTP health check
 
 The pipeline checks the application locally on the Docker host:
 
@@ -215,19 +223,23 @@ The check retries up to ten times, with a three-second interval between attempts
 
 ## 9. Security Considerations
 
+The project includes the following security precautions:
+
 - Private SSH keys must never be committed to the repository.
 - Real usernames and passwords must not be stored in GitHub.
 - `.gitignore` excludes `tomcat-users.xml` and other sensitive files.
 - `tomcat-users.xml.example` contains placeholders, not working credentials.
 - The actual Tomcat credentials file is maintained separately on the Docker host.
 
-**Known security limitation:** The current Dockerfile copies `tomcat-users.xml` into the Docker image. Credentials are therefore included in the image layers. This is acceptable only as a learning-lab configuration, not as a production secrets-management practice.
+**Known security limitation:** The current Dockerfile copies `tomcat-users.xml` into the Docker image. Consequently, credentials are included in the image layers. This is acceptable only as a learning-lab configuration, not as a production secrets-management practice.
 
-A production implementation should inject secrets at runtime and use a dedicated secrets-management solution.
+A production implementation should inject secrets at runtime using a dedicated secrets-management solution.
 
 The project also uses the mutable `tomcat:latest` image tag. Pinning a tested version or image digest would improve reproducibility.
 
 ## 10. Limitations and Future Improvements
+
+Potential improvements include:
 
 - Move application repository and branch settings into pipeline parameters.
 - Improve secrets management and remove credentials from image layers.
@@ -242,7 +254,7 @@ The project also uses the mutable `tomcat:latest` image tag. Pinning a tested ve
 
 This project provided practical experience with:
 
-- Writing and executing Jenkins declarative pipelines.
+- Writing and executing Jenkins Declarative Pipelines.
 - Building Java applications with Maven.
 - Packaging and deploying WAR artifacts.
 - Configuring SSH-based remote deployment.
@@ -256,12 +268,6 @@ This project provided practical experience with:
 
 **Core CI/CD deployment: Successfully tested in an AWS EC2 lab.**
 
-The repository contains the pipeline definition, Docker configuration, and project documentation. Security hardening, rollback support, and additional automation remain future improvements.
+The repository contains the pipeline definition, Docker configuration, and project documentation.
 
-
-
-
-
-
-#   j e n k i n s - d o c k e r - t o m c a t - c i c d  
- 
+The core deployment workflow was verified successfully. Security hardening, rollback support, and additional automation remain future improvements.
